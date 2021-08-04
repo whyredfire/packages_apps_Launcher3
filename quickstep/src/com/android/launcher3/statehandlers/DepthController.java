@@ -24,10 +24,11 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.os.IBinder;
+import android.content.Context;
 import android.util.FloatProperty;
 import android.view.View;
 import android.view.ViewTreeObserver;
-
+import com.android.launcher3.R;
 import com.android.launcher3.BaseActivity;
 import com.android.launcher3.Launcher;
 import com.android.launcher3.LauncherState;
@@ -47,6 +48,9 @@ import com.android.systemui.shared.system.WallpaperManagerCompat;
  */
 public class DepthController implements StateHandler<LauncherState>,
         BaseActivity.MultiWindowModeChangedListener {
+
+
+    private final Context mContext;
 
     public static final FloatProperty<DepthController> DEPTH =
             new FloatProperty<DepthController>("depth") {
@@ -229,9 +233,10 @@ public class DepthController implements StateHandler<LauncherState>,
             return;
         }
         mRestoreDepth = false;
-
+        mContext = context;
+        boolean hasBlurEnabled = mContext.getResources().getBoolean(R.bool.config_blur_enabled);
         boolean supportsBlur = BlurUtils.supportsBlursOnWindows();
-        if (supportsBlur && (mSurface == null || !mSurface.isValid())) {
+        if (supportsBlur && hasBlurEnabled && (mSurface == null || !mSurface.isValid())) {
             return;
         }
         mDepth = depthF;
@@ -241,7 +246,7 @@ public class DepthController implements StateHandler<LauncherState>,
             mWallpaperManager.setWallpaperZoomOut(windowToken, mDepth);
         }
 
-        if (supportsBlur) {
+        if (supportsBlur && hasBlurEnabled) {
             final int blur;
             if (mLauncher.isInState(LauncherState.NORMAL) && mLauncher.getStateManager()
                     .getCurrentStableState() == LauncherState.NORMAL) {
